@@ -1,0 +1,7 @@
+[Unit]
+Description=Fetch a fresh Drift wallpaper from Wallhaven
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/drift-wallpaper

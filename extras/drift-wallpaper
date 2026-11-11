@@ -1,0 +1,53 @@
+#!/bin/bash
+# drift-wallpaper — fetch a random, tasteful, SFW widescreen wallpaper from
+# Wallhaven into the Drift theme's background folder and, when Drift is the
+# active theme, switch to it.
+#
+#   drift-wallpaper            fetch one new wallpaper and apply it
+#   drift-wallpaper --no-apply fetch only
+#
+# Filters: purity=100 (SFW only), categories=100 (General — no anime/people),
+# real photography only, ranked by all-time favourites, at least 2560x1440,
+# landscape ratios, and a rotating set of calm subject tags.
+set -euo pipefail
+
+DIR="$HOME/.config/omarchy/backgrounds/drift"
+KEEP=20
+TOPICS=(landscape nature mountains lake sea forest clouds snow desert coast)
+API="https://wallhaven.cc/api/v1/search"
+UA="drift-wallpaper/1.0"
+
+mkdir -p "$DIR"
+
+topic=${TOPICS[RANDOM % ${#TOPICS[@]}]}
+q=$(jq -rn --arg q "+photography +$topic" '$q|@uri')
+query="categories=100&purity=100&sorting=favorites&atleast=2560x1440&ratios=16x9,16x10,21x9&q=$q"
+
+meta=$(curl -fsSL -A "$UA" --max-time 20 "$API?$query") || { echo "Wallhaven unreachable" >&2; exit 1; }
+last=$(jq -r '.meta.last_page // 1' <<<"$meta")
+(( last > 10 )) && last=10
+page=$(( RANDOM % last + 1 ))
+(( page > 1 )) && meta=$(curl -fsSL -A "$UA" --max-time 20 "$API?$query&page=$page")
+
+# Prefer images we don't already have
+mapfile -t urls < <(jq -r '.data[] | select(.purity == "sfw") | .path' <<<"$meta" | shuf)
+url=""
+for u in "${urls[@]}"; do
+  [[ -e $DIR/${u##*/} ]] || { url=$u; break; }
+done
+[[ -n $url ]] || { echo "No new wallpaper found for '$topic'" >&2; exit 1; }
+
+file="$DIR/${url##*/}"
+curl -fsSL -A "$UA" --max-time 60 -o "$file.part" "$url"
+mv "$file.part" "$file"
+echo "Fetched $topic: $file"
+
+# Prune old downloads, never the one on screen
+current=$(readlink -f "$HOME/.local/state/omarchy/current/background" 2>/dev/null || true)
+ls -1t "$DIR"/wallhaven-* 2>/dev/null | tail -n +$((KEEP + 1)) | while read -r old; do
+  [[ $(readlink -f "$old") == "$current" ]] || rm -f "$old"
+done
+
+if [[ ${1:-} != "--no-apply" && $(cat "$HOME/.local/state/omarchy/current/theme.name" 2>/dev/null) == "drift" ]]; then
+  omarchy theme bg set "$file"
+fi

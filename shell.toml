@@ -1,0 +1,138 @@
+# Drift shell surfaces: a slim, translucent graphite bar that lets the
+# wallpaper breathe, hairline borders and quiet, low-contrast controls.
+
+[bar]
+background = "#15161a"
+background-alpha = 0.62
+text = "#d8dadf"
+active = "#d5a27f"
+scale-with-font = true
+size-horizontal = 28
+size-vertical = 30
+icon-size = 11
+icon-font = 12
+
+[hyprland]
+active-border = "#9fb7c9"
+active-border-foreground = "#d8dadf"
+
+[controls]
+normal-color = "#d8dadf"
+normal-fill-alpha = 0.03
+normal-border-width = 0
+normal-border-alpha = 0.0
+
+hover-cursor-color = "#eceef1"
+hover-cursor-fill-alpha = 0.08
+hover-cursor-border-width = 0
+hover-cursor-border-alpha = 0.0
+
+focus-color = "#9fb7c9"
+focus-fill-alpha = 0.10
+focus-border-width = 1
+focus-border-alpha = 0.45
+
+selected-color = "#9fb7c9"
+selected-fill-alpha = 0.16
+selected-border-width = 0
+selected-border-alpha = 0.0
+
+pressed-fill-alpha = 0.20
+selection-fill-alpha = 0.30
+
+[spacing]
+scale = 1.05
+scale-with-font = true
+panel-padding = 20
+
+[font]
+base-size = 12
+
+[popups]
+background = "#1b1d21"
+background-alpha = 0.92
+text = "#d8dadf"
+border = "#d8dadf"
+border-alpha = 0.12
+border-width = 1
+
+[tooltip]
+background = "#1b1d21"
+background-alpha = 0.94
+text = "#d8dadf"
+border = "#d8dadf"
+border-alpha = 0.10
+border-width = 1
+
+[notifications]
+background = "#1b1d21"
+background-alpha = 0.92
+text = "#d8dadf"
+border = "#d8dadf"
+border-alpha = 0.12
+border-width = 1
+countdown = "#9fb7c9"
+
+[launcher]
+background = "#1b1d21"
+background-alpha = 0.90
+text = "#d8dadf"
+border = "#d8dadf"
+border-alpha = 0.12
+border-width = 1
+scrim = "#0f1012"
+scrim-alpha = 0.35
+selected-background = "#9fb7c9"
+selected-background-alpha = 0.14
+selected-text = "#eceef1"
+selected-border = "#9fb7c9"
+selected-border-alpha = 0.0
+
+[menu]
+background = "#1b1d21"
+background-alpha = 0.92
+text = "#d8dadf"
+border = "#d8dadf"
+border-alpha = 0.12
+border-width = 1
+scrim = "#0f1012"
+scrim-alpha = 0.35
+selected-background = "#9fb7c9"
+selected-background-alpha = 0.14
+selected-text = "#eceef1"
+selected-border = "#9fb7c9"
+selected-border-alpha = 0.0
+
+[polkit]
+background = "#1b1d21"
+background-alpha = 0.95
+text = "#d8dadf"
+text-error = "#d08a8a"
+border = "#d8dadf"
+border-error = "#d08a8a"
+border-alpha = 0.2
+border-width = 1
+scrim = "#0f1012"
+scrim-alpha = 0.5
+accent = "#9fb7c9"
+
+[lock]
+background = "#15161a"
+background-alpha = 0.55
+text = "#eceef1"
+placeholder = "#7d838c"
+text-error = "#d08a8a"
+border = "#d8dadf"
+border-active = "#9fb7c9"
+border-error = "#d08a8a"
+border-alpha = 0.35
+border-width = 1
+selection = "#9fb7c9"
+selection-alpha = 0.40
+
+[image-picker]
+text = "#d8dadf"
+selected-border = "#9fb7c9"
+selected-border-alpha = 1.0
+unselected-border = "#d8dadf"
+unselected-border-alpha = 0.22
