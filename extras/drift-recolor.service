@@ -1,0 +1,6 @@
+[Unit]
+Description=Recolour the Drift theme from the current wallpaper
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/drift-recolor

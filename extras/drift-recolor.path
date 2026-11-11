@@ -1,0 +1,9 @@
+[Unit]
+Description=Recolour Drift whenever the wallpaper changes
+
+[Path]
+PathChanged=%h/.local/state/omarchy/current/background
+Unit=drift-recolor.service
+
+[Install]
+WantedBy=default.target
