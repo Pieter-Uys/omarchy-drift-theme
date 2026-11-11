@@ -79,8 +79,10 @@ systemctl --user disable --now drift-recolor.path   # stop auto-recolouring
 ```
 
 The installer marks `colors.toml` and `shell.toml` with git's skip-worktree
-flag, so the generated colours never block `git pull` or
-`omarchy theme update`.
+flag, so the generated colours stay out of `git status` and don't get in the
+way of `omarchy theme update`. If the repo's default palette itself ever
+changes, re-run `install.sh` instead: it restores those two files before
+pulling and recolours afterwards.
 
 ## Files
 

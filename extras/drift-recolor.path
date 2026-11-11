@@ -2,7 +2,9 @@
 Description=Recolour Drift whenever the wallpaper changes
 
 [Path]
-PathChanged=%h/.local/state/omarchy/current/background
+# Watch the directory: a watch on the background symlink would follow it to
+# the image file and miss the link being swapped for a new one.
+PathChanged=%h/.local/state/omarchy/current
 Unit=drift-recolor.service
 
 [Install]
