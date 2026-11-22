@@ -4,3 +4,6 @@ Description=Recolour the Drift theme from the current wallpaper
 [Service]
 Type=oneshot
 ExecStart=%h/.local/bin/drift-recolor
+# omarchy-theme-set finishes retinting apps and runs theme-set hooks in the
+# background after it returns. The default KillMode would kill that work.
+KillMode=process

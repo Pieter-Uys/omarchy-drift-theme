@@ -43,6 +43,8 @@ if [[ -d $THEME_DIR/.git ]]; then
   step "Updating theme in $THEME_DIR"
   git -C "$THEME_DIR" update-index --no-skip-worktree "${GENERATED[@]}"
   git -C "$THEME_DIR" checkout -- "${GENERATED[@]}"
+  # The palette is back to default, so the next recolour must not be skipped.
+  rm -f "$HOME/.local/state/omarchy/drift-recolor.last"
   git -C "$THEME_DIR" pull --ff-only
 else
   if [[ -e $THEME_DIR ]]; then

@@ -38,6 +38,7 @@ done
 [[ -n $url ]] || { echo "No new wallpaper found for '$topic'" >&2; exit 1; }
 
 file="$DIR/${url##*/}"
+trap 'rm -f "$file.part"' EXIT
 curl -fsSL -A "$UA" --max-time 60 -o "$file.part" "$url"
 mv "$file.part" "$file"
 echo "Fetched $topic: $file"
