@@ -67,7 +67,8 @@ systemctl --user disable --now drift-wallpaper.timer  # stop rotating
 `drift-recolor` runs `aether --generate <wallpaper> --no-apply`, writes the
 extracted palette to the theme's `colors.toml`, renders `shell.toml` from
 `extras/shell.toml.tpl`, and re-applies Drift without touching the wallpaper.
-A systemd path unit runs it whenever the background changes, whether from the
+With ImageMagick installed, the accent is the palette colour closest to the
+wallpaper's dominant hue. A systemd path unit runs it whenever the background changes, whether from the
 timer, `omarchy theme bg next` or the background picker. It only acts while
 Drift is the active theme.
 

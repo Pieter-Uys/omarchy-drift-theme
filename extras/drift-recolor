@@ -57,8 +57,59 @@ fi
 
 command -v aether >/dev/null || { echo "aether is not installed (omarchy pkg aur add aether)" >&2; exit 1; }
 
+# Aether's accent is always its blue slot. Print the palette colour nearest the
+# wallpaper's dominant hue instead, or nothing to keep Aether's choice (no
+# ImageMagick, a near-greyscale image, or no close and readable colour).
+pick_accent() {
+  command -v magick >/dev/null || return 0
+  magick "$1[0]" -resize '64x36!' -depth 8 rgb:- 2>/dev/null | od -An -vtu1 -w3 |
+    awk -v palette="$(omarchy-theme-color --file "$2" --all)" '
+    function hex(s) { s = tolower(s); return (index(H, substr(s, 1, 1)) - 1) * 16 + index(H, substr(s, 2, 1)) - 1 }
+    function hue(r, g, b,   mx, mn) {
+      mx = r; if (g > mx) mx = g; if (b > mx) mx = b
+      mn = r; if (g < mn) mn = g; if (b < mn) mn = b
+      CHROMA = (mx - mn) / 255
+      if (mx == mn) { HUE = 0; return }
+      if (mx == r) HUE = 60 * (g - b) / (mx - mn)
+      else if (mx == g) HUE = 120 + 60 * (b - r) / (mx - mn)
+      else HUE = 240 + 60 * (r - g) / (mx - mn)
+      if (HUE < 0) HUE += 360
+    }
+    function lin(v) { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ^ 2.4 }
+    function lum(c) { return 0.2126 * lin(hex(substr(c, 2, 2))) + 0.7152 * lin(hex(substr(c, 4, 2))) + 0.0722 * lin(hex(substr(c, 6, 2))) }
+    BEGIN {
+      H = "0123456789abcdef"
+      n = split(palette, lines, "\n")
+      for (i = 1; i <= n; i++) { split(lines[i], kv, "\t"); p[kv[1]] = kv[2] }
+    }
+    {
+      hue($1, $2, $3)
+      if (CHROMA >= 0.12) { bins[int(HUE / 10) % 36] += CHROMA; total += CHROMA }
+    }
+    END {
+      if (!total) exit
+      for (i = 0; i < 36; i++) {
+        s = bins[(i + 35) % 36] + bins[i] + bins[(i + 1) % 36]
+        if (s > best) { best = s; dominant = i * 10 + 5 }
+      }
+      bg = lum(p["background"])
+      n = split("red orange yellow green cyan blue magenta", keys, " ")
+      for (i = 1; i <= n; i++) {
+        c = p[keys[i]]
+        if (length(c) != 7) continue
+        hue(hex(substr(c, 2, 2)), hex(substr(c, 4, 2)), hex(substr(c, 6, 2)))
+        l = lum(c)
+        contrast = l > bg ? (l + 0.05) / (bg + 0.05) : (bg + 0.05) / (l + 0.05)
+        if (CHROMA < 0.2 || contrast < 3) continue
+        d = HUE - dominant; if (d < 0) d = -d; if (d > 180) d = 360 - d
+        if (pick == "" || d < gap) { pick = c; gap = d }
+      }
+      if (pick != "" && gap <= 40) print pick
+    }'
+}
+
 recolor() {
-  local image=$1 tmp out
+  local image=$1 tmp out accent
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"; trap - RETURN' RETURN
 
@@ -67,6 +118,9 @@ recolor() {
     return 1
   }
   [[ -s $tmp/colors.toml ]] || { echo "Aether produced no palette for $image" >&2; return 1; }
+
+  accent=$(pick_accent "$image" "$tmp/colors.toml" || true)
+  [[ -z $accent ]] || sed -i "s/^accent = .*/accent = \"$accent\"/" "$tmp/colors.toml"
 
   # Resolve Aether's names (bg, dark_fg, ...) to Omarchy's canonical keys.
   declare -A c
@@ -102,7 +156,7 @@ recolor() {
 # Let a wallpaper switch settle, then recolour. Check again afterwards in case
 # the wallpaper changed while we were busy.
 [[ -n $image ]] || sleep 0.3
-for _ in 1 2 3; do
+while :; do
   drift_active || exit 0
   seen=$(on_screen)
   target=$(readlink -f "${image:-$STATE/current/background}" 2>/dev/null || true)

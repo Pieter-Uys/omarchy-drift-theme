@@ -1,5 +1,8 @@
 [Unit]
 Description=Recolour the Drift theme from the current wallpaper
+# Each recolour also re-triggers the path unit, so quick wallpaper changes hit
+# the default start limit, which stops auto-recolouring until it is reset.
+StartLimitIntervalSec=0
 
 [Service]
 Type=oneshot

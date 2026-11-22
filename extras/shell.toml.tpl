@@ -5,7 +5,7 @@
 background = "{{darker_background}}"
 background-alpha = 0.62
 text = "{{foreground}}"
-active = "{{orange}}"
+active = "{{accent}}"
 scale-with-font = true
 size-horizontal = 28
 size-vertical = 30
