@@ -1,4 +1,7 @@
 #!/bin/bash
+# SC2016: the single-quoted `bash -c` snippets expand $1 in the child shell.
+# SC2329: the case_* functions are run indirectly, found through `declare -F`.
+# shellcheck disable=SC2016,SC2329
 # Characterization tests for drift-recolor, drift-wallpaper and install.sh.
 #
 #   tests/run.sh            run every case and compare with tests/golden/

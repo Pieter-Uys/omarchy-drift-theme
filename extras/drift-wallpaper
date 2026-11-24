@@ -48,6 +48,7 @@ echo "Fetched $topic: $file"
 
 # Prune old downloads, never the one on screen
 current=$(readlink -f "$CURRENT/background" 2>/dev/null || true)
+# shellcheck disable=SC2012  # ls -t for the mtime order; names are wallhaven-<id>.<ext>
 ls -1t "$DIR"/wallhaven-* 2>/dev/null | tail -n +$((KEEP + 1)) | while read -r old; do
   [[ $(readlink -f "$old") == "$current" ]] || rm -f "$old"
 done
