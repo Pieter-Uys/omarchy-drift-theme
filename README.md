@@ -96,3 +96,7 @@ pulling and recolours afterwards.
 | `extras/drift-recolor` | Wallpaper-to-palette recolouring, with its path unit and service |
 | `extras/shell.toml.tpl` | Shell styling template that `drift-recolor` fills in |
 | `install.sh` | One-shot installer |
+
+## License
+
+MIT. See [LICENSE](LICENSE). Wallpapers fetched from Wallhaven belong to their photographers and are not covered by this licence.
