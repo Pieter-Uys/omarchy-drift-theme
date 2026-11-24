@@ -10,7 +10,7 @@
 
 [Install](#install) · [Wallpapers](#wallpapers) · [Colours](#colours-from-the-wallpaper) · [Files](#files) · [License](#license)
 
-![Drift palette](preview.png)
+![Drift with fastfetch and Neovim](screenshot.webp)
 
 </div>
 
@@ -116,6 +116,8 @@ The installer marks `colors.toml` and `shell.toml` with git's skip-worktree flag
 | `extras/drift-recolor` | Wallpaper-to-palette recolouring, with its path unit and service |
 | `extras/shell.toml.tpl` | Shell styling template that `drift-recolor` fills in |
 | `install.sh` | One-shot installer |
+| `preview.png` | Palette swatch shown in the Omarchy theme picker |
+| `screenshot.webp` | The screenshot at the top of this README |
 
 ## License
 
