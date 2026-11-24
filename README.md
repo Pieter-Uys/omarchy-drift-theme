@@ -8,7 +8,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 ![Wallpapers](https://img.shields.io/badge/wallpapers-Wallhaven%20SFW-lightgrey?style=flat-square)
 
-[Install](#install) · [Wallpapers](#wallpapers) · [Colours](#colours-from-the-wallpaper) · [Files](#files) · [License](#license)
+[Install](#install) · [Uninstall](#uninstall) · [Guarantees](#what-drift-will-and-wont-do) · [Wallpapers](#wallpapers) · [Colours](#colours-from-the-wallpaper) · [Files](#files) · [License](#license)
 
 ![Drift with fastfetch and Neovim](screenshot.webp)
 
@@ -29,7 +29,13 @@ A clean, neutral graphite theme for [Omarchy](https://omarchy.org) built to sit 
 
 ## Install
 
-Theme, wallpaper fetcher, wallpaper-matched colours and glassy bar:
+**Just the theme** (fixed graphite palette and the bundled gradient wallpaper), the way Omarchy installs any theme:
+
+```bash
+omarchy theme install https://github.com/Pieter-Uys/omarchy-drift-theme
+```
+
+**The full Drift** adds the wallpaper fetcher, wallpaper-matched colours and the glassy bar. It reuses an existing theme install:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Pieter-Uys/omarchy-drift-theme/main/install.sh | bash
@@ -62,12 +68,6 @@ git clone https://github.com/Pieter-Uys/omarchy-drift-theme.git
 | `--no-recolor` | Keep the fixed graphite palette instead of matching the wallpaper |
 | `--uninstall` | Remove Drift and everything the installer added (see [Uninstall](#uninstall)) |
 
-Theme only (fixed graphite palette, no wallpaper rotation):
-
-```bash
-omarchy theme install https://github.com/Pieter-Uys/omarchy-drift-theme
-```
-
 </details>
 
 Re-running `install.sh` updates an existing install. `omarchy theme update` also pulls the latest version.
@@ -80,6 +80,32 @@ curl -fsSL https://raw.githubusercontent.com/Pieter-Uys/omarchy-drift-theme/main
 
 This switches back to the theme you had before Drift (or Matte Black), then removes the systemd units, the `drift-wallpaper` and `drift-recolor` commands, the theme and the downloaded wallpapers in `~/.config/omarchy/backgrounds/drift`. It is safe to run twice, and it also tidies up after `omarchy theme remove drift`.
 
+## What Drift will and won't do
+
+Drift runs in the background, so these rules are part of its contract. Each one is checked by a case in [`tests/run.sh`](tests/run.sh).
+
+| Drift will never… | Test |
+|---|---|
+| re-apply itself while another theme is active | `recolor_not_drift`, `wallpaper_other_theme` |
+| interrupt a theme switch you've started | `recolor_switching` |
+| change your wallpaper when recolouring | `recolor_red` (`skip_bg=1`) |
+| keep recolouring the same wallpaper in a loop | `recolor_skips_same_wallpaper`, `recolor_reset` |
+| replace working colours with a broken palette (failures keep the current colours) | `recolor_aether_fails`, `recolor_aether_empty` |
+| delete the wallpaper on screen when pruning old downloads | `wallpaper_prunes_old` |
+| leave anything behind on `--uninstall`, or delete a `drift-*` command that isn't its own | `uninstall`, `uninstall_keeps_users_own_command` |
+| rotate wallpapers unless you asked for `--timer` | `install_fresh`, `install_timer_opt_in` |
+
+What `install.sh` changes on your system: a git clone in `~/.config/omarchy/themes/drift`, two links in `~/.local/bin`, up to four systemd user units in `~/.config/systemd/user`, a few state files in `~/.local/state/omarchy`, wallpapers in `~/.config/omarchy/backgrounds/drift`, and (unless `--no-recolor`) the Aether package from the AUR. It downloads four starter photos from Wallhaven, and more only when you run `drift-wallpaper` or enable `--timer`. "SFW" is Wallhaven's own rating.
+
+<details>
+<summary><b>Why a crash mid-recolour heals itself</b></summary>
+
+<br>
+
+`colors.toml` and `shell.toml` are each written to a temporary file and moved into place, then the wallpaper is noted in `drift-recolor.last`. A crash between those steps leaves the note stale, so the next wallpaper event recolours again and brings both files back in step.
+
+</details>
+
 ## Wallpapers
 
 `drift-wallpaper` asks Wallhaven for:
@@ -91,7 +117,7 @@ This switches back to the theme you had before Drift (or Matte Black), then remo
 
 Images are saved to `~/.config/omarchy/backgrounds/drift/` (the newest 20 are kept), so `omarchy theme bg next` cycles through them. The background only changes while Drift is the active theme.
 
-> No wallpapers are shipped in this repo: they belong to their photographers on Wallhaven.
+> The only wallpaper shipped in this repo is `backgrounds/1-graphite.jpg`, a gradient made from Drift's palette. Photos are never bundled: they belong to their photographers on Wallhaven.
 
 | Command | Description |
 |---|---|
@@ -128,13 +154,15 @@ The installer marks `colors.toml` and `shell.toml` with git's skip-worktree flag
 | `colors.toml` | Palette; Omarchy generates terminal, editor and Hyprland colours from it |
 | `shell.toml` | Bar, menus, popups, notifications, lock screen styling |
 | `icons.theme` | Icon theme (Yaru-blue) |
+| `backgrounds/1-graphite.jpg` | Default wallpaper: a graphite gradient made from the palette |
 | `extras/drift-wallpaper` | Wallhaven fetcher, with its systemd service and timer |
 | `extras/drift-recolor` | Wallpaper-to-palette recolouring, with its path unit and service |
 | `extras/shell.toml.tpl` | Shell styling template that `drift-recolor` fills in |
 | `install.sh` | One-shot installer |
 | `preview.png` | Palette swatch shown in the Omarchy theme picker |
 | `screenshot.webp` | The screenshot at the top of this README |
+| `tests/run.sh` | Characterization tests (run in CI on every push) |
 
 ## License
 
-MIT. See [LICENSE](LICENSE). Wallpapers fetched from Wallhaven belong to their photographers and are not covered by this licence.
+MIT. See [LICENSE](LICENSE); that includes the bundled gradient wallpaper. `tests/vendor/omarchy-theme-color` is Omarchy's, under [its MIT licence](tests/vendor/LICENSE-omarchy). Wallpapers fetched from Wallhaven belong to their photographers and are not covered by this licence.
