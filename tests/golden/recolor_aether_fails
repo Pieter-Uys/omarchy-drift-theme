@@ -1,0 +1,41 @@
+### recolor (exit 1)
+aether: could not read image
+### command log
+aether --generate <W>/fixtures/red.png --no-apply --output <tmp> --no-zed --no-vscode --no-neovim
+### colors.toml
+# Drift — neutral graphite with a soft glacier accent, built to sit quietly
+# over ever-changing wallpapers.
+mode = "dark"
+
+accent = "#9fb7c9"
+selection = "#3a3f47"
+muted = "#5c626b"
+
+background = "#1b1d21"
+dark_background = "#151619"
+darker_background = "#0f1012"
+lighter_background = "#272a30"
+
+foreground = "#d8dadf"
+dark_foreground = "#7d838c"
+light_foreground = "#c4c7cd"
+bright_foreground = "#eceef1"
+
+red = "#d08a8a"
+yellow = "#d9c48f"
+orange = "#d5a27f"
+green = "#9fbf9a"
+cyan = "#8fbfbf"
+blue = "#9fb7c9"
+magenta = "#b8a3c9"
+brown = "#8a7462"
+
+bright_red = "#e0a0a0"
+bright_yellow = "#e6d4a4"
+bright_green = "#b3d0ae"
+bright_cyan = "#a6d1d1"
+bright_blue = "#b6cbdb"
+bright_magenta = "#cbb8da"
+### shell.toml vs default
+### last
+cat: <T>/home/.local/state/omarchy/drift-recolor.last: No such file or directory

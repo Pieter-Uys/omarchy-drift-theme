@@ -26,22 +26,22 @@ for arg in "$@"; do
   esac
 done
 
-exec 9>"$LOCK"
-flock 9
-
-[[ $(cat "$STATE/current/theme.name" 2>/dev/null) == "drift" ]] || exit 0
-
 apply() {
   OMARCHY_THEME_SKIP_BACKGROUND=1 omarchy-theme-set drift </dev/null >/dev/null
 }
 
+theme_is_drift() { [[ $(cat "$STATE/current/theme.name" 2>/dev/null) == "drift" ]]; }
+
 # False once another theme is active or a switch is under way (omarchy-theme-set
 # holds next-theme until it swaps). Applying then would undo the user's switch.
-drift_active() {
-  [[ $(cat "$STATE/current/theme.name" 2>/dev/null) == "drift" && ! -e $STATE/current/next-theme ]]
-}
+drift_active() { theme_is_drift && [[ ! -e $STATE/current/next-theme ]]; }
 
 on_screen() { readlink -f "$STATE/current/background" 2>/dev/null || true; }
+
+exec 9>"$LOCK"
+flock 9
+
+theme_is_drift || exit 0
 
 # $LAST holds the wallpaper on screen when the palette was chosen, not the
 # palette's source. Applying fires the path unit, which must then find nothing
@@ -75,8 +75,9 @@ pick_accent() {
       else HUE = 240 + 60 * (r - g) / (mx - mn)
       if (HUE < 0) HUE += 360
     }
+    function rgb(c) { R = hex(substr(c, 2, 2)); G = hex(substr(c, 4, 2)); B = hex(substr(c, 6, 2)) }
     function lin(v) { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ^ 2.4 }
-    function lum(c) { return 0.2126 * lin(hex(substr(c, 2, 2))) + 0.7152 * lin(hex(substr(c, 4, 2))) + 0.0722 * lin(hex(substr(c, 6, 2))) }
+    function lum(c) { rgb(c); return 0.2126 * lin(R) + 0.7152 * lin(G) + 0.0722 * lin(B) }
     BEGIN {
       H = "0123456789abcdef"
       n = split(palette, lines, "\n")
@@ -97,7 +98,7 @@ pick_accent() {
       for (i = 1; i <= n; i++) {
         c = p[keys[i]]
         if (length(c) != 7) continue
-        hue(hex(substr(c, 2, 2)), hex(substr(c, 4, 2)), hex(substr(c, 6, 2)))
+        rgb(c); hue(R, G, B)
         l = lum(c)
         contrast = l > bg ? (l + 0.05) / (bg + 0.05) : (bg + 0.05) / (l + 0.05)
         if (CHROMA < 0.2 || contrast < 3) continue
@@ -108,8 +109,9 @@ pick_accent() {
     }'
 }
 
+# recolor <image> <wallpaper on screen>
 recolor() {
-  local image=$1 tmp out accent
+  local image=$1 seen=$2 tmp out accent shell
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"; trap - RETURN' RETURN
 
@@ -147,7 +149,6 @@ recolor() {
   mv "$THEME_DIR/colors.toml.new" "$THEME_DIR/colors.toml"
   mv "$THEME_DIR/shell.toml.new" "$THEME_DIR/shell.toml"
 
-  mkdir -p "$STATE"
   printf '%s\n' "$seen" >"$LAST"
   apply
   echo "Drift recoloured from ${image##*/} (accent ${c[accent]})"
@@ -165,7 +166,7 @@ while :; do
   if (( !force )) && [[ -z $image && $(cat "$LAST" 2>/dev/null) == "$target" ]]; then
     exit 0
   fi
-  recolor "$target"
+  recolor "$target" "$seen"
   force=0
   [[ -z $image ]] || exit 0
 done

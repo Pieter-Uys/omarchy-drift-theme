@@ -15,6 +15,8 @@ THEME_DIR="$HOME/.config/omarchy/themes/drift"
 BG_DIR="$HOME/.config/omarchy/backgrounds/drift"
 BIN_DIR="$HOME/.local/bin"
 UNIT_DIR="$HOME/.config/systemd/user"
+STATE="$HOME/.local/state/omarchy"
+STARTER=4  # wallpapers to have on disk before the first switch
 
 GLASSY=1 TIMER=1 APPLY=1 RECOLOR=1
 for arg in "$@"; do
@@ -33,10 +35,17 @@ done
 
 step() { printf '\e[34m::\e[0m %s\n' "$*"; }
 
+# enable_units <name> <kind>: install <name>.service and <name>.<kind> from the
+# clone and start <name>.<kind>.
+enable_units() {
+  cp "$THEME_DIR/extras/$1.service" "$THEME_DIR/extras/$1.$2" "$UNIT_DIR/"
+  systemctl --user daemon-reload
+  systemctl --user enable --now "$1.$2"
+}
+
 # drift-recolor rewrites colors.toml and shell.toml in the clone. Tell git to
 # leave those alone, so `git pull` and `omarchy theme update` keep working.
 GENERATED=(colors.toml shell.toml)
-protect_generated() { git -C "$THEME_DIR" update-index --skip-worktree "${GENERATED[@]}"; }
 
 # 1. Theme files: a git clone, so `omarchy theme update` keeps it current.
 if [[ -d $THEME_DIR/.git ]]; then
@@ -44,7 +53,7 @@ if [[ -d $THEME_DIR/.git ]]; then
   git -C "$THEME_DIR" update-index --no-skip-worktree "${GENERATED[@]}"
   git -C "$THEME_DIR" checkout -- "${GENERATED[@]}"
   # The palette is back to default, so the next recolour must not be skipped.
-  rm -f "$HOME/.local/state/omarchy/drift-recolor.last"
+  rm -f "$STATE/drift-recolor.last"
   git -C "$THEME_DIR" pull --ff-only
 else
   if [[ -e $THEME_DIR ]]; then
@@ -56,7 +65,7 @@ else
   step "Cloning theme into $THEME_DIR"
   git clone --depth 1 -- "$REPO" "$THEME_DIR"
 fi
-protect_generated
+git -C "$THEME_DIR" update-index --skip-worktree "${GENERATED[@]}"
 
 # 2. Commands, linked from the clone so updates come with them.
 step "Linking drift-wallpaper and drift-recolor into $BIN_DIR"
@@ -69,34 +78,30 @@ done
 # 3. Seed a few wallpapers so the theme has something to show right away.
 mkdir -p "$BG_DIR"
 have=$(find "$BG_DIR" -maxdepth 1 -type f -name 'wallhaven-*' | wc -l)
-if (( have < 4 )); then
+if (( have < STARTER )); then
   step "Downloading starter wallpapers"
-  for _ in $(seq $((4 - have))); do
+  for _ in $(seq $((STARTER - have))); do
     "$BIN_DIR/drift-wallpaper" --no-apply || true
     sleep 1
   done
 fi
 
+mkdir -p "$UNIT_DIR"
+
 # 4. Timer that rotates the wallpaper every two hours.
 if (( TIMER )); then
   step "Enabling drift-wallpaper.timer"
-  mkdir -p "$UNIT_DIR"
-  cp "$THEME_DIR/extras/drift-wallpaper.service" "$THEME_DIR/extras/drift-wallpaper.timer" "$UNIT_DIR/"
-  systemctl --user daemon-reload
-  systemctl --user enable --now drift-wallpaper.timer
+  enable_units drift-wallpaper timer
 fi
 
 # 5. Recolour from the wallpaper whenever it changes (needs Aether).
-mkdir -p "$UNIT_DIR"
 if (( RECOLOR )) && ! command -v aether >/dev/null; then
   step "Installing Aether for wallpaper-matched colours"
   omarchy pkg aur add aether </dev/null || { echo "Could not install Aether; keeping the graphite palette" >&2; RECOLOR=0; }
 fi
 if (( RECOLOR )); then
   step "Enabling drift-recolor.path"
-  cp "$THEME_DIR/extras/drift-recolor.path" "$THEME_DIR/extras/drift-recolor.service" "$UNIT_DIR/"
-  systemctl --user daemon-reload
-  systemctl --user enable --now drift-recolor.path
+  enable_units drift-recolor path
 elif [[ -f $UNIT_DIR/drift-recolor.path ]]; then
   systemctl --user disable --now drift-recolor.path || true
   rm -f "$UNIT_DIR/drift-recolor.path" "$UNIT_DIR/drift-recolor.service"

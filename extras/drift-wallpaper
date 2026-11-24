@@ -16,6 +16,9 @@ KEEP=20
 TOPICS=(landscape nature mountains lake sea forest clouds snow desert coast)
 API="https://wallhaven.cc/api/v1/search"
 UA="drift-wallpaper/1.0"
+CURRENT="$HOME/.local/state/omarchy/current"
+
+wallhaven() { curl -fsSL -A "$UA" "$@"; }
 
 mkdir -p "$DIR"
 
@@ -23,11 +26,11 @@ topic=${TOPICS[RANDOM % ${#TOPICS[@]}]}
 q=$(jq -rn --arg q "+photography +$topic" '$q|@uri')
 query="categories=100&purity=100&sorting=favorites&atleast=2560x1440&ratios=16x9,16x10,21x9&q=$q"
 
-meta=$(curl -fsSL -A "$UA" --max-time 20 "$API?$query") || { echo "Wallhaven unreachable" >&2; exit 1; }
+meta=$(wallhaven --max-time 20 "$API?$query") || { echo "Wallhaven unreachable" >&2; exit 1; }
 last=$(jq -r '.meta.last_page // 1' <<<"$meta")
 (( last > 10 )) && last=10
 page=$(( RANDOM % last + 1 ))
-(( page > 1 )) && meta=$(curl -fsSL -A "$UA" --max-time 20 "$API?$query&page=$page")
+(( page > 1 )) && meta=$(wallhaven --max-time 20 "$API?$query&page=$page")
 
 # Prefer images we don't already have
 mapfile -t urls < <(jq -r '.data[] | select(.purity == "sfw") | .path' <<<"$meta" | shuf)
@@ -39,16 +42,16 @@ done
 
 file="$DIR/${url##*/}"
 trap 'rm -f "$file.part"' EXIT
-curl -fsSL -A "$UA" --max-time 60 -o "$file.part" "$url"
+wallhaven --max-time 60 -o "$file.part" "$url"
 mv "$file.part" "$file"
 echo "Fetched $topic: $file"
 
 # Prune old downloads, never the one on screen
-current=$(readlink -f "$HOME/.local/state/omarchy/current/background" 2>/dev/null || true)
+current=$(readlink -f "$CURRENT/background" 2>/dev/null || true)
 ls -1t "$DIR"/wallhaven-* 2>/dev/null | tail -n +$((KEEP + 1)) | while read -r old; do
   [[ $(readlink -f "$old") == "$current" ]] || rm -f "$old"
 done
 
-if [[ ${1:-} != "--no-apply" && $(cat "$HOME/.local/state/omarchy/current/theme.name" 2>/dev/null) == "drift" ]]; then
+if [[ ${1:-} != "--no-apply" && $(cat "$CURRENT/theme.name" 2>/dev/null) == "drift" ]]; then
   omarchy theme bg set "$file"
 fi

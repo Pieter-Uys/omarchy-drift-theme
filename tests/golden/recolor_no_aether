@@ -1,0 +1,6 @@
+### recolor (exit 1)
+aether is not installed (omarchy pkg aur add aether)
+### reset still works (exit 0)
+Drift reset to its default palette
+### command log
+omarchy-theme-set skip_bg=1 drift
