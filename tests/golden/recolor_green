@@ -34,12 +34,12 @@ color15 = "#eef1f5"
 > # Drift shell surfaces (template). drift-recolor fills the colour tokens from
 > # the palette Aether extracts from the current wallpaper.
 5c5
-< background = "#15161a"
+< background = "#0f1012"
 ---
 > background = "#0a0c10"
 7,8c7,8
 < text = "#d8dadf"
-< active = "#d5a27f"
+< active = "#9fb7c9"
 ---
 > text = "#dfe3ea"
 > active = "#6fb07a"
@@ -170,7 +170,7 @@ color15 = "#eef1f5"
 ---
 > accent = "#6fb07a"
 120c120
-< background = "#15161a"
+< background = "#0f1012"
 ---
 > background = "#0a0c10"
 122,127c122,127

@@ -11,6 +11,7 @@
 # are redirected to a local copy of this working tree. The golden file holds
 # the exit code, output, command log and the files the case cares about.
 set -uo pipefail
+export LC_ALL=C  # same sort order and messages on every host
 
 ROOT=$(cd "${BASH_SOURCE[0]%/*}/.." && pwd)
 GOLDEN="$ROOT/tests/golden"
@@ -33,10 +34,17 @@ make_sys() {
   local dir=$1 f; shift
   mkdir -p "$dir"
   for f in /usr/bin/*; do ln -s "$f" "$dir/${f##*/}"; done
-  ln -sf "$(command -v omarchy-theme-color)" "$dir/omarchy-theme-color"
+  ln -sf "$ROOT/tests/vendor/omarchy-theme-color" "$dir/omarchy-theme-color"
   for f in aether "$@"; do rm -f "$dir/$f"; done
 }
 make_sys "$WORK/sys"
+
+# The goldens are made with the vendored resolver, so they match on any host.
+# Say so when the desktop's Omarchy has moved on: refresh the vendor and goldens.
+installed=$(command -v omarchy-theme-color || true)
+if [[ -n $installed ]] && ! cmp -s <(tail -n +7 "$ROOT/tests/vendor/omarchy-theme-color") <(tail -n +2 "$installed"); then
+  echo "note: installed omarchy-theme-color differs from tests/vendor/ (Omarchy updated?)" >&2
+fi
 make_sys "$WORK/sys-nojq" jq
 
 FIX="$WORK/fixtures"
@@ -337,6 +345,18 @@ case_recolor_no_aether() {
   run "recolor" "$RECOLOR"
   run "reset still works" "$RECOLOR" --reset
   show_log
+}
+
+# The committed shell.toml is the static fallback a plain `omarchy theme
+# install` uses: it must be the template rendered with the default palette.
+case_static_shell_matches_template() {
+  local key shell
+  declare -A c
+  while IFS=$'\t' read -r key value; do c[$key]=$value; done \
+    < <(omarchy-theme-color --file "$REPO/colors.toml" --all)
+  shell=$(<"$REPO/extras/shell.toml.tpl")
+  for key in "${!c[@]}"; do shell=${shell//"{{$key}}"/${c[$key]}}; done
+  show "differences below the header" diff <(tail -n +3 <<<"$shell") <(tail -n +3 "$REPO/shell.toml")
 }
 
 # --- drift-wallpaper cases -------------------------------------------------

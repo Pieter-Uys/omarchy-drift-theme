@@ -1,0 +1,28 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      # git before checkout, or actions/checkout falls back to a tarball without
+      # .git and tests/run.sh cannot list the tracked files.
+      - name: Install tools
+        run: pacman -Syu --noconfirm --needed git jq imagemagick shellcheck diffutils gawk
+
+      - uses: actions/checkout@v4
+
+      - name: Trust the checkout
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: shellcheck
+        run: shellcheck extras/drift-recolor extras/drift-wallpaper install.sh tests/run.sh
+
+      - name: Characterization tests
+        run: tests/run.sh
