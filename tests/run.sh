@@ -125,6 +125,7 @@ log-call omarchy "wait=${OMARCHY_THEME_WAIT:-}" "$@"
 state="$HOME/.local/state/omarchy/current"
 case "$1 $2" in
   "theme set")
+    [[ -z ${THEME_SET_FAIL:-} ]] || exit 1
     mkdir -p "$state"
     echo "$3" >"$state/theme.name"
     first=$(ls -1 "$HOME/.config/omarchy/backgrounds/$3"/* 2>/dev/null | head -1)
@@ -194,7 +195,7 @@ new_case() {
   STATE="$HOME/.local/state/omarchy"
   THEME="$HOME/.config/omarchy/themes/drift"
   BG="$HOME/.config/omarchy/backgrounds/drift"
-  unset AETHER_MODE CURL_FAIL CURL_PATHS PKG_FAIL
+  unset AETHER_MODE CURL_FAIL CURL_PATHS PKG_FAIL THEME_SET_FAIL
   export OMARCHY_PATH="$T/omarchy"
   mkdir -p "$OMARCHY_PATH/themes/matte-black" "$OMARCHY_PATH/themes/tokyo-night"
   {
@@ -484,7 +485,7 @@ case_install_aether_unavailable() {
 
 # --- uninstall cases -------------------------------------------------------
 
-leftovers() { show "drift files left" bash -c 'cd "$1" && find . -path "*drift*" | sort' _ "$HOME"; }
+leftovers() { show "drift files left" bash -c 'cd "$1" && find . -name "*drift*" -prune | sort' _ "$HOME"; }
 
 # Coming from another theme, so install records it for uninstall.
 install_from_tokyo_night() {
@@ -539,6 +540,43 @@ case_uninstall_keeps_users_own_command() {
   echo '#!/bin/sh' >"$HOME/.local/bin/drift-recolor"
   run "uninstall" bash "$INSTALL" --uninstall
   leftovers
+}
+
+case_uninstall_theme_switch_fails() {
+  install_from_tokyo_night
+  export THEME_SET_FAIL=1
+  run "uninstall" bash "$INSTALL" --uninstall
+  show_log; leftovers
+  unset THEME_SET_FAIL
+  : >"$T/log"
+  run "retry once the switch works" bash "$INSTALL" --uninstall
+  show_log; leftovers
+}
+
+# A .service left behind without its .timer/.path still gets removed.
+case_uninstall_orphaned_service() {
+  install_from_tokyo_night
+  rm "$HOME/.config/systemd/user/drift-wallpaper.timer"
+  run "uninstall" bash "$INSTALL" --uninstall
+  show_log; leftovers
+}
+
+case_uninstall_dangling_theme_link() {
+  install_from_tokyo_night
+  rm -rf "$THEME"
+  ln -s "$T/nowhere" "$THEME"
+  run "uninstall" bash "$INSTALL" --uninstall
+  leftovers
+}
+
+case_install_no_apply_records_previous_theme() {
+  mkdir -p "$STATE/current"
+  echo nord >"$STATE/current/theme.name"
+  run "install" bash "$INSTALL" --no-apply
+  show "previous theme recorded" cat "$STATE/drift-previous-theme"
+  echo drift >"$STATE/current/theme.name"
+  run "reinstall while Drift is active" bash "$INSTALL" --no-apply
+  show "still the theme before Drift" cat "$STATE/drift-previous-theme"
 }
 
 case_uninstall_piped() {

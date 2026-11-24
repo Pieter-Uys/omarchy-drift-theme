@@ -20,8 +20,10 @@ Already up to date.
    Re-run with --timer to rotate it every two hours.
 ### command log
 systemctl --user disable --now drift-wallpaper.timer
+systemctl --user stop drift-wallpaper.service
 systemctl --user daemon-reload
 systemctl --user disable --now drift-recolor.path
+systemctl --user stop drift-recolor.service
 systemctl --user daemon-reload
 ### bin
 drift-recolor -> <T>/home/.config/omarchy/themes/drift/extras/drift-recolor

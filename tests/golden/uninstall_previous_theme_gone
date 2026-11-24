@@ -9,7 +9,9 @@
 [34m::[0m Drift is uninstalled.
 ### command log
 systemctl --user disable --now drift-wallpaper.timer
+systemctl --user stop drift-wallpaper.service
 systemctl --user daemon-reload
 systemctl --user disable --now drift-recolor.path
+systemctl --user stop drift-recolor.service
 systemctl --user daemon-reload
 omarchy wait=1 theme set matte-black

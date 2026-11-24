@@ -1,0 +1,18 @@
+### uninstall (exit 0)
+[34m::[0m Removing drift-wallpaper.timer
+[34m::[0m Removing drift-recolor.path
+[34m::[0m Switching back to tokyo-night
+[34m::[0m Removing <T>/home/.local/bin/drift-wallpaper
+[34m::[0m Removing <T>/home/.local/bin/drift-recolor
+[34m::[0m Removing <T>/home/.config/omarchy/themes/drift
+[34m::[0m Removing <T>/home/.config/omarchy/backgrounds/drift
+[34m::[0m Drift is uninstalled.
+### command log
+systemctl --user disable --now drift-wallpaper.timer
+systemctl --user stop drift-wallpaper.service
+systemctl --user daemon-reload
+systemctl --user disable --now drift-recolor.path
+systemctl --user stop drift-recolor.service
+systemctl --user daemon-reload
+omarchy wait=1 theme set tokyo-night
+### drift files left

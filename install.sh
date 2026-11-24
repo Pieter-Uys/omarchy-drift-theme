@@ -45,9 +45,11 @@ enable_units() {
   systemctl --user enable --now "$1.$2"
 }
 
-# disable_units <name> <kind>: stop <name>.<kind> and remove both unit files.
+# disable_units <name> <kind>: stop <name>.<kind> and any run of <name>.service
+# already under way, and remove both unit files.
 disable_units() {
   systemctl --user disable --now "$1.$2" || true
+  systemctl --user stop "$1.service" || true
   rm -f "$UNIT_DIR/$1.$2" "$UNIT_DIR/$1.service"
   systemctl --user daemon-reload
 }
@@ -58,7 +60,7 @@ uninstall() {
   local unit cmd prev dir
   # Units first, so switching themes below cannot set off a recolour.
   for unit in drift-wallpaper.timer drift-recolor.path; do
-    if [[ -f $UNIT_DIR/$unit ]]; then
+    if [[ -f $UNIT_DIR/$unit || -f $UNIT_DIR/${unit%.*}.service ]]; then
       step "Removing $unit"
       disable_units "${unit%.*}" "${unit##*.}"
     fi
@@ -70,7 +72,11 @@ uninstall() {
       prev=matte-black
     fi
     step "Switching back to $prev"
-    OMARCHY_THEME_WAIT=1 omarchy theme set "$prev" </dev/null
+    if ! OMARCHY_THEME_WAIT=1 omarchy theme set "$prev" </dev/null; then
+      echo "Could not switch back to $prev. The units are removed but the theme is still in place:" >&2
+      echo "switch to another theme, then run --uninstall again." >&2
+      exit 1
+    fi
   fi
 
   # Only our own links: never a drift-* command the user put there themselves.
@@ -83,7 +89,7 @@ uninstall() {
 
   rm -f "$STATE/drift-recolor.last" "$STATE/drift-previous-theme"
   for dir in "$THEME_DIR" "$BG_DIR"; do
-    if [[ -e $dir ]]; then
+    if [[ -e $dir || -L $dir ]]; then
       step "Removing $dir"
       rm -rf "$dir"
     fi
@@ -167,12 +173,14 @@ elif [[ -f $UNIT_DIR/drift-recolor.path ]]; then
   disable_units drift-recolor path
 fi
 
+# Remember what --uninstall should switch back to (also with --no-apply, in
+# case Drift is switched on by hand later).
+prev=$(cat "$STATE/current/theme.name" 2>/dev/null || true)
+[[ -z $prev || $prev == drift ]] || printf '%s\n' "$prev" >"$STATE/drift-previous-theme"
+
 # 6. Apply.
 if (( APPLY )); then
   step "Switching to Drift"
-  # Remember what to go back to on --uninstall.
-  prev=$(cat "$STATE/current/theme.name" 2>/dev/null || true)
-  [[ -z $prev || $prev == drift ]] || printf '%s\n' "$prev" >"$STATE/drift-previous-theme"
   OMARCHY_THEME_WAIT=1 omarchy theme set drift </dev/null
   if (( GLASSY )); then
     omarchy bar background glassy
