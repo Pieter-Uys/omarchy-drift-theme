@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Vendored for tests/run.sh from Omarchy 4.5.0 (/usr/share/omarchy/bin/omarchy-theme-color),
-# https://github.com/basecamp/omarchy, MIT licence. Unmodified below this
-# header. tests/run.sh warns when the installed copy differs; refresh this
-# file and the goldens together.
+# Vendored for tests/run.sh from Omarchy 4.5.0 (bin/omarchy-theme-color), unmodified
+# below this header. Copyright (c) David Heinemeier Hansson, MIT licence: see
+# tests/vendor/LICENSE-omarchy. tests/run.sh warns when the installed copy
+# differs; refresh this file and the goldens together.
 
 # omarchy:summary=Resolve semantic colors from an Omarchy theme colors.toml
 # omarchy:args=[--file <colors.toml>] (--all | --raw | <key> [fallback])
