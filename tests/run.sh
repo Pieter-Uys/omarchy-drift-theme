@@ -195,6 +195,8 @@ new_case() {
   THEME="$HOME/.config/omarchy/themes/drift"
   BG="$HOME/.config/omarchy/backgrounds/drift"
   unset AETHER_MODE CURL_FAIL CURL_PATHS PKG_FAIL
+  export OMARCHY_PATH="$T/omarchy"
+  mkdir -p "$OMARCHY_PATH/themes/matte-black" "$OMARCHY_PATH/themes/tokyo-night"
   {
     printf '#!/bin/bash\n'
     printf 'args=(); for a; do [[ $a == https://github.com/* ]] && a=file://%s; args+=("$a"); done\n' "$REPO"
@@ -465,6 +467,71 @@ case_install_aether_unavailable() {
   export PKG_FAIL=1
   run "install" bash "$INSTALL" --no-apply
   show_log; installed_state
+}
+
+# --- uninstall cases -------------------------------------------------------
+
+leftovers() { show "drift files left" bash -c 'cd "$1" && find . -path "*drift*" | sort' _ "$HOME"; }
+
+# Coming from another theme, so install records it for uninstall.
+install_from_tokyo_night() {
+  mkdir -p "$STATE/current"
+  echo tokyo-night >"$STATE/current/theme.name"
+  bash "$INSTALL" >/dev/null 2>&1
+  : >"$T/log"
+}
+
+case_uninstall() {
+  install_from_tokyo_night
+  show "previous theme recorded" cat "$STATE/drift-previous-theme"
+  run "uninstall" bash "$INSTALL" --uninstall
+  show_log; leftovers
+  show "theme" cat "$STATE/current/theme.name"
+}
+
+case_uninstall_twice() {
+  install_from_tokyo_night
+  bash "$INSTALL" --uninstall >/dev/null 2>&1
+  : >"$T/log"
+  run "second uninstall" bash "$INSTALL" --uninstall
+  show_log; leftovers
+}
+
+case_uninstall_previous_theme_gone() {
+  install_from_tokyo_night
+  rm -rf "$OMARCHY_PATH/themes/tokyo-night"
+  run "uninstall" bash "$INSTALL" --uninstall
+  show_log
+}
+
+case_uninstall_while_other_theme_active() {
+  install_from_tokyo_night
+  echo nord >"$STATE/current/theme.name"
+  run "uninstall" bash "$INSTALL" --uninstall
+  show_log; leftovers
+  show "theme" cat "$STATE/current/theme.name"
+}
+
+# `omarchy theme remove drift` deletes the clone and leaves the rest behind.
+case_uninstall_after_theme_remove() {
+  install_from_tokyo_night
+  rm -rf "$THEME"
+  run "uninstall" bash "$INSTALL" --uninstall
+  show_log; leftovers
+}
+
+case_uninstall_keeps_users_own_command() {
+  install_from_tokyo_night
+  rm "$HOME/.local/bin/drift-recolor"
+  echo '#!/bin/sh' >"$HOME/.local/bin/drift-recolor"
+  run "uninstall" bash "$INSTALL" --uninstall
+  leftovers
+}
+
+case_uninstall_piped() {
+  install_from_tokyo_night
+  run "uninstall" bash -c 'bash -s -- --uninstall <"$1"' _ "$INSTALL"
+  leftovers
 }
 
 case_install_unknown_option() {

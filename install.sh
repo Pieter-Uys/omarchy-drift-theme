@@ -8,6 +8,8 @@
 #   --no-timer    install the fetcher but don't rotate wallpapers automatically
 #   --no-apply    install everything but don't switch to the theme
 #   --no-recolor  keep the fixed graphite palette instead of matching the wallpaper
+#   --uninstall   remove Drift, its commands, units, state and downloaded wallpapers
+#                 (switches back to the theme that was active before Drift)
 set -euo pipefail
 
 REPO="https://github.com/Pieter-Uys/omarchy-drift-theme.git"
@@ -18,19 +20,16 @@ UNIT_DIR="$HOME/.config/systemd/user"
 STATE="$HOME/.local/state/omarchy"
 STARTER=4  # wallpapers to have on disk before the first switch
 
-GLASSY=1 TIMER=1 APPLY=1 RECOLOR=1
+GLASSY=1 TIMER=1 APPLY=1 RECOLOR=1 UNINSTALL=0
 for arg in "$@"; do
   case $arg in
     --no-glassy) GLASSY=0 ;;
     --no-timer) TIMER=0 ;;
     --no-apply) APPLY=0 ;;
     --no-recolor) RECOLOR=0 ;;
+    --uninstall) UNINSTALL=1 ;;
     *) echo "Unknown option: $arg" >&2; exit 1 ;;
   esac
-done
-
-for cmd in git curl jq omarchy; do
-  command -v "$cmd" >/dev/null || { echo "Missing required command: $cmd" >&2; exit 1; }
 done
 
 step() { printf '\e[34m::\e[0m %s\n' "$*"; }
@@ -42,6 +41,61 @@ enable_units() {
   systemctl --user daemon-reload
   systemctl --user enable --now "$1.$2"
 }
+
+# disable_units <name> <kind>: stop <name>.<kind> and remove both unit files.
+disable_units() {
+  systemctl --user disable --now "$1.$2" || true
+  rm -f "$UNIT_DIR/$1.$2" "$UNIT_DIR/$1.service"
+  systemctl --user daemon-reload
+}
+
+# Undo everything install.sh did. Safe to re-run, and works when the theme was
+# already removed with `omarchy theme remove drift`.
+uninstall() {
+  local unit cmd prev dir
+  # Units first, so switching themes below cannot set off a recolour.
+  for unit in drift-wallpaper.timer drift-recolor.path; do
+    if [[ -f $UNIT_DIR/$unit ]]; then
+      step "Removing $unit"
+      disable_units "${unit%.*}" "${unit##*.}"
+    fi
+  done
+
+  if [[ $(cat "$STATE/current/theme.name" 2>/dev/null) == "drift" ]]; then
+    prev=$(cat "$STATE/drift-previous-theme" 2>/dev/null || true)
+    if [[ -z $prev || ! ( -d $HOME/.config/omarchy/themes/$prev || -d ${OMARCHY_PATH:-/usr/share/omarchy}/themes/$prev ) ]]; then
+      prev=matte-black
+    fi
+    step "Switching back to $prev"
+    OMARCHY_THEME_WAIT=1 omarchy theme set "$prev" </dev/null
+  fi
+
+  # Only our own links: never a drift-* command the user put there themselves.
+  for cmd in drift-wallpaper drift-recolor; do
+    if [[ -L $BIN_DIR/$cmd && $(readlink "$BIN_DIR/$cmd") == "$THEME_DIR/"* ]]; then
+      step "Removing $BIN_DIR/$cmd"
+      rm -f "$BIN_DIR/$cmd"
+    fi
+  done
+
+  rm -f "$STATE/drift-recolor.last" "$STATE/drift-previous-theme"
+  for dir in "$THEME_DIR" "$BG_DIR"; do
+    if [[ -e $dir ]]; then
+      step "Removing $dir"
+      rm -rf "$dir"
+    fi
+  done
+  step "Drift is uninstalled."
+}
+
+if (( UNINSTALL )); then
+  uninstall
+  exit 0
+fi
+
+for cmd in git curl jq omarchy; do
+  command -v "$cmd" >/dev/null || { echo "Missing required command: $cmd" >&2; exit 1; }
+done
 
 # drift-recolor rewrites colors.toml and shell.toml in the clone. Tell git to
 # leave those alone, so `git pull` and `omarchy theme update` keep working.
@@ -103,14 +157,15 @@ if (( RECOLOR )); then
   step "Enabling drift-recolor.path"
   enable_units drift-recolor path
 elif [[ -f $UNIT_DIR/drift-recolor.path ]]; then
-  systemctl --user disable --now drift-recolor.path || true
-  rm -f "$UNIT_DIR/drift-recolor.path" "$UNIT_DIR/drift-recolor.service"
-  systemctl --user daemon-reload
+  disable_units drift-recolor path
 fi
 
 # 6. Apply.
 if (( APPLY )); then
   step "Switching to Drift"
+  # Remember what to go back to on --uninstall.
+  prev=$(cat "$STATE/current/theme.name" 2>/dev/null || true)
+  [[ -z $prev || $prev == drift ]] || printf '%s\n' "$prev" >"$STATE/drift-previous-theme"
   OMARCHY_THEME_WAIT=1 omarchy theme set drift </dev/null
   if (( GLASSY )); then
     omarchy bar background glassy

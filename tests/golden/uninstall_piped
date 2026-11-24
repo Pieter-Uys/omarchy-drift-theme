@@ -1,0 +1,10 @@
+### uninstall (exit 0)
+[34m::[0m Removing drift-wallpaper.timer
+[34m::[0m Removing drift-recolor.path
+[34m::[0m Switching back to tokyo-night
+[34m::[0m Removing <T>/home/.local/bin/drift-wallpaper
+[34m::[0m Removing <T>/home/.local/bin/drift-recolor
+[34m::[0m Removing <T>/home/.config/omarchy/themes/drift
+[34m::[0m Removing <T>/home/.config/omarchy/backgrounds/drift
+[34m::[0m Drift is uninstalled.
+### drift files left

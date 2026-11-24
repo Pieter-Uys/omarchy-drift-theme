@@ -53,6 +53,7 @@ git clone https://github.com/Pieter-Uys/omarchy-drift-theme.git
 | `--no-timer` | Install the fetcher but don't rotate wallpapers automatically |
 | `--no-apply` | Install everything but don't switch to the theme |
 | `--no-recolor` | Keep the fixed graphite palette instead of matching the wallpaper |
+| `--uninstall` | Remove Drift and everything the installer added (see [Uninstall](#uninstall)) |
 
 Theme only (fixed graphite palette, no wallpaper rotation):
 
@@ -63,6 +64,14 @@ omarchy theme install https://github.com/Pieter-Uys/omarchy-drift-theme
 </details>
 
 Re-running `install.sh` updates an existing install. `omarchy theme update` also pulls the latest version.
+
+## Uninstall
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Pieter-Uys/omarchy-drift-theme/main/install.sh | bash -s -- --uninstall
+```
+
+This switches back to the theme you had before Drift (or Matte Black), then removes the systemd units, the `drift-wallpaper` and `drift-recolor` commands, the theme and the downloaded wallpapers in `~/.config/omarchy/backgrounds/drift`. It is safe to run twice, and it also tidies up after `omarchy theme remove drift`.
 
 ## Wallpapers
 

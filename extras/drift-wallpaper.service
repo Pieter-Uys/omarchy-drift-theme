@@ -1,6 +1,8 @@
 [Unit]
 Description=Fetch a fresh Drift wallpaper from Wallhaven
 After=network-online.target
+# Skip quietly once the theme is gone (the link in ~/.local/bin dangles).
+ConditionPathExists=%h/.local/bin/drift-wallpaper
 
 [Service]
 Type=oneshot

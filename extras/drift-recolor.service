@@ -1,5 +1,7 @@
 [Unit]
 Description=Recolour the Drift theme from the current wallpaper
+# Skip quietly once the theme is gone (the link in ~/.local/bin dangles).
+ConditionPathExists=%h/.local/bin/drift-recolor
 # Each recolour also re-triggers the path unit, so quick wallpaper changes hit
 # the default start limit, which stops auto-recolouring until it is reset.
 StartLimitIntervalSec=0
