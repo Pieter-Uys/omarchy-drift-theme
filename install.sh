@@ -5,7 +5,9 @@
 #
 # Options:
 #   --no-glassy   leave the bar background setting as it is
-#   --no-timer    install the fetcher but don't rotate wallpapers automatically
+#   --timer       also rotate the wallpaper every two hours (off unless asked for;
+#                 an existing timer is kept on re-install)
+#   --no-timer    remove the rotation timer (drift-wallpaper still works by hand)
 #   --no-apply    install everything but don't switch to the theme
 #   --no-recolor  keep the fixed graphite palette instead of matching the wallpaper
 #   --uninstall   remove Drift, its commands, units, state and downloaded wallpapers
@@ -20,10 +22,11 @@ UNIT_DIR="$HOME/.config/systemd/user"
 STATE="$HOME/.local/state/omarchy"
 STARTER=4  # wallpapers to have on disk before the first switch
 
-GLASSY=1 TIMER=1 APPLY=1 RECOLOR=1 UNINSTALL=0
+GLASSY=1 TIMER=keep APPLY=1 RECOLOR=1 UNINSTALL=0
 for arg in "$@"; do
   case $arg in
     --no-glassy) GLASSY=0 ;;
+    --timer) TIMER=1 ;;
     --no-timer) TIMER=0 ;;
     --no-apply) APPLY=0 ;;
     --no-recolor) RECOLOR=0 ;;
@@ -142,10 +145,14 @@ fi
 
 mkdir -p "$UNIT_DIR"
 
-# 4. Timer that rotates the wallpaper every two hours.
-if (( TIMER )); then
+# 4. Timer that rotates the wallpaper every two hours: opt-in, but an existing
+#    one is kept (and refreshed from the clone) on re-install.
+if [[ $TIMER == 1 || ( $TIMER == keep && -f $UNIT_DIR/drift-wallpaper.timer ) ]]; then
   step "Enabling drift-wallpaper.timer"
   enable_units drift-wallpaper timer
+  TIMER=1
+elif [[ -f $UNIT_DIR/drift-wallpaper.timer ]]; then
+  disable_units drift-wallpaper timer
 fi
 
 # 5. Recolour from the wallpaper whenever it changes (needs Aether).
@@ -176,3 +183,4 @@ if (( APPLY )); then
 fi
 
 step "Done. Run 'drift-wallpaper' any time for a fresh background."
+[[ $TIMER == 1 ]] || echo "   Re-run with --timer to rotate it every two hours."

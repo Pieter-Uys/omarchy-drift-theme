@@ -1,0 +1,23 @@
+### reinstall without flags (exit 0)
+[34m::[0m Updating theme in <T>/home/.config/omarchy/themes/drift
+Already up to date.
+[34m::[0m Linking drift-wallpaper and drift-recolor into <T>/home/.local/bin
+[34m::[0m Enabling drift-wallpaper.timer
+[34m::[0m Enabling drift-recolor.path
+[34m::[0m Switching to Drift
+Drift recoloured from wallhaven-new1.jpg (accent #d0645a)
+[34m::[0m Done. Run 'drift-wallpaper' any time for a fresh background.
+### command log
+systemctl --user daemon-reload
+systemctl --user enable --now drift-wallpaper.timer
+systemctl --user daemon-reload
+systemctl --user enable --now drift-recolor.path
+omarchy wait=1 theme set drift
+omarchy wait= bar background glassy
+aether --generate <T>/home/.config/omarchy/backgrounds/drift/wallhaven-new1.jpg --no-apply --output <tmp> --no-zed --no-vscode --no-neovim
+omarchy-theme-set skip_bg=1 drift
+### units
+drift-recolor.path
+drift-recolor.service
+drift-wallpaper.service
+drift-wallpaper.timer

@@ -8,9 +8,9 @@ Fetched <topic>: <T>/home/.config/omarchy/backgrounds/drift/wallhaven-new1.jpg
 Fetched <topic>: <T>/home/.config/omarchy/backgrounds/drift/wallhaven-new2.jpg
 Fetched <topic>: <T>/home/.config/omarchy/backgrounds/drift/wallhaven-new3.jpg
 Fetched <topic>: <T>/home/.config/omarchy/backgrounds/drift/wallhaven-new4.jpg
-[34m::[0m Enabling drift-wallpaper.timer
 [34m::[0m Enabling drift-recolor.path
 [34m::[0m Done. Run 'drift-wallpaper' any time for a fresh background.
+   Re-run with --timer to rotate it every two hours.
 ### backup
 mine
 ### command log
@@ -22,7 +22,5 @@ curl -fsSL -A drift-wallpaper/1.0 --max-time 20 https://wallhaven.cc/api/v1/sear
 curl -fsSL -A drift-wallpaper/1.0 --max-time 60 -o <T>/home/.config/omarchy/backgrounds/drift/wallhaven-new3.jpg.part https://w.wallhaven.cc/full/wallhaven-new3.jpg
 curl -fsSL -A drift-wallpaper/1.0 --max-time 20 https://wallhaven.cc/api/v1/search?categories=100&purity=100&sorting=favorites&atleast=2560x1440&ratios=16x9,16x10,21x9&q=<topic>
 curl -fsSL -A drift-wallpaper/1.0 --max-time 60 -o <T>/home/.config/omarchy/backgrounds/drift/wallhaven-new4.jpg.part https://w.wallhaven.cc/full/wallhaven-new4.jpg
-systemctl --user daemon-reload
-systemctl --user enable --now drift-wallpaper.timer
 systemctl --user daemon-reload
 systemctl --user enable --now drift-recolor.path

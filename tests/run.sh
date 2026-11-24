@@ -450,10 +450,23 @@ case_install_backs_up_non_git_theme() {
 }
 
 case_install_opt_outs() {
-  run "install" bash "$INSTALL"
+  run "install" bash "$INSTALL" --timer
   : >"$T/log"
   run "reinstall with opt-outs" bash "$INSTALL" --no-glassy --no-timer --no-apply --no-recolor
   show_log; installed_state
+}
+
+case_install_timer_opt_in() {
+  run "install with timer" bash "$INSTALL" --timer --no-apply
+  show_log; installed_state
+}
+
+case_install_keeps_existing_timer() {
+  bash "$INSTALL" --timer >/dev/null 2>&1
+  : >"$T/log"
+  run "reinstall without flags" bash "$INSTALL"
+  show_log
+  show "units" ls -1 "$HOME/.config/systemd/user"
 }
 
 case_install_installs_aether() {
@@ -477,7 +490,7 @@ leftovers() { show "drift files left" bash -c 'cd "$1" && find . -path "*drift*"
 install_from_tokyo_night() {
   mkdir -p "$STATE/current"
   echo tokyo-night >"$STATE/current/theme.name"
-  bash "$INSTALL" >/dev/null 2>&1
+  bash "$INSTALL" --timer >/dev/null 2>&1
   : >"$T/log"
 }
 

@@ -17,15 +17,16 @@ Drift recoloured from wallhaven-new1.jpg (accent #d0645a)
 Already up to date.
 [34m::[0m Linking drift-wallpaper and drift-recolor into <T>/home/.local/bin
 [34m::[0m Done. Run 'drift-wallpaper' any time for a fresh background.
+   Re-run with --timer to rotate it every two hours.
 ### command log
+systemctl --user disable --now drift-wallpaper.timer
+systemctl --user daemon-reload
 systemctl --user disable --now drift-recolor.path
 systemctl --user daemon-reload
 ### bin
 drift-recolor -> <T>/home/.config/omarchy/themes/drift/extras/drift-recolor
 drift-wallpaper -> <T>/home/.config/omarchy/themes/drift/extras/drift-wallpaper
 ### units
-drift-wallpaper.service
-drift-wallpaper.timer
 ### backgrounds
 4
 ### skip-worktree

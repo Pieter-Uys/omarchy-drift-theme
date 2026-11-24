@@ -1,0 +1,40 @@
+### install with timer (exit 0)
+[34m::[0m Cloning theme into <T>/home/.config/omarchy/themes/drift
+Cloning into '<T>/home/.config/omarchy/themes/drift'...
+[34m::[0m Linking drift-wallpaper and drift-recolor into <T>/home/.local/bin
+[34m::[0m Downloading starter wallpapers
+Fetched <topic>: <T>/home/.config/omarchy/backgrounds/drift/wallhaven-new1.jpg
+Fetched <topic>: <T>/home/.config/omarchy/backgrounds/drift/wallhaven-new2.jpg
+Fetched <topic>: <T>/home/.config/omarchy/backgrounds/drift/wallhaven-new3.jpg
+Fetched <topic>: <T>/home/.config/omarchy/backgrounds/drift/wallhaven-new4.jpg
+[34m::[0m Enabling drift-wallpaper.timer
+[34m::[0m Enabling drift-recolor.path
+[34m::[0m Done. Run 'drift-wallpaper' any time for a fresh background.
+### command log
+curl -fsSL -A drift-wallpaper/1.0 --max-time 20 https://wallhaven.cc/api/v1/search?categories=100&purity=100&sorting=favorites&atleast=2560x1440&ratios=16x9,16x10,21x9&q=<topic>
+curl -fsSL -A drift-wallpaper/1.0 --max-time 60 -o <T>/home/.config/omarchy/backgrounds/drift/wallhaven-new1.jpg.part https://w.wallhaven.cc/full/wallhaven-new1.jpg
+curl -fsSL -A drift-wallpaper/1.0 --max-time 20 https://wallhaven.cc/api/v1/search?categories=100&purity=100&sorting=favorites&atleast=2560x1440&ratios=16x9,16x10,21x9&q=<topic>
+curl -fsSL -A drift-wallpaper/1.0 --max-time 60 -o <T>/home/.config/omarchy/backgrounds/drift/wallhaven-new2.jpg.part https://w.wallhaven.cc/full/wallhaven-new2.jpg
+curl -fsSL -A drift-wallpaper/1.0 --max-time 20 https://wallhaven.cc/api/v1/search?categories=100&purity=100&sorting=favorites&atleast=2560x1440&ratios=16x9,16x10,21x9&q=<topic>
+curl -fsSL -A drift-wallpaper/1.0 --max-time 60 -o <T>/home/.config/omarchy/backgrounds/drift/wallhaven-new3.jpg.part https://w.wallhaven.cc/full/wallhaven-new3.jpg
+curl -fsSL -A drift-wallpaper/1.0 --max-time 20 https://wallhaven.cc/api/v1/search?categories=100&purity=100&sorting=favorites&atleast=2560x1440&ratios=16x9,16x10,21x9&q=<topic>
+curl -fsSL -A drift-wallpaper/1.0 --max-time 60 -o <T>/home/.config/omarchy/backgrounds/drift/wallhaven-new4.jpg.part https://w.wallhaven.cc/full/wallhaven-new4.jpg
+systemctl --user daemon-reload
+systemctl --user enable --now drift-wallpaper.timer
+systemctl --user daemon-reload
+systemctl --user enable --now drift-recolor.path
+### bin
+drift-recolor -> <T>/home/.config/omarchy/themes/drift/extras/drift-recolor
+drift-wallpaper -> <T>/home/.config/omarchy/themes/drift/extras/drift-wallpaper
+### units
+drift-recolor.path
+drift-recolor.service
+drift-wallpaper.service
+drift-wallpaper.timer
+### backgrounds
+4
+### skip-worktree
+S colors.toml
+S shell.toml
+### theme
+cat: <T>/home/.local/state/omarchy/current/theme.name: No such file or directory

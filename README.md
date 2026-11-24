@@ -25,14 +25,20 @@ A clean, neutral graphite theme for [Omarchy](https://omarchy.org) built to sit 
 | **Glass bar** | A slim, translucent graphite bar (best with `omarchy bar background glassy`), with hairline-bordered menus, popups, notifications and lock screen |
 | **Colours from the wallpaper** | Every time the background changes, Drift recolours terminals, borders, bar and menus from the image using [Aether](https://github.com/bjarneo/aether)'s palette extraction |
 | **Graphite fallback** | Without Aether, a calm graphite palette with a glacier-blue accent |
-| **Rotating photography** | `drift-wallpaper` pulls a random, high-resolution landscape photo from [Wallhaven](https://wallhaven.cc) every two hours |
+| **Rotating photography** | `drift-wallpaper` pulls a random, high-resolution landscape photo from [Wallhaven](https://wallhaven.cc), by hand or every two hours with `--timer` |
 
 ## Install
 
-Everything (theme, wallpaper fetcher, timer, wallpaper-matched colours, glassy bar):
+Theme, wallpaper fetcher, wallpaper-matched colours and glassy bar:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Pieter-Uys/omarchy-drift-theme/main/install.sh | bash
+```
+
+Add `-s -- --timer` to also rotate the wallpaper every two hours:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Pieter-Uys/omarchy-drift-theme/main/install.sh | bash -s -- --timer
 ```
 
 <details>
@@ -44,13 +50,14 @@ From a clone, with optional flags:
 
 ```bash
 git clone https://github.com/Pieter-Uys/omarchy-drift-theme.git
-./omarchy-drift-theme/install.sh   # --no-glassy --no-timer --no-apply --no-recolor
+./omarchy-drift-theme/install.sh   # --timer --no-glassy --no-apply --no-recolor
 ```
 
 | Flag | Effect |
 |---|---|
 | `--no-glassy` | Leave the bar background setting as it is |
-| `--no-timer` | Install the fetcher but don't rotate wallpapers automatically |
+| `--timer` | Also rotate the wallpaper every two hours (a timer you already have is kept on re-install) |
+| `--no-timer` | Remove the rotation timer; `drift-wallpaper` still works by hand |
 | `--no-apply` | Install everything but don't switch to the theme |
 | `--no-recolor` | Keep the fixed graphite palette instead of matching the wallpaper |
 | `--uninstall` | Remove Drift and everything the installer added (see [Uninstall](#uninstall)) |
@@ -90,7 +97,7 @@ Images are saved to `~/.config/omarchy/backgrounds/drift/` (the newest 20 are ke
 |---|---|
 | `drift-wallpaper` | Fetch and apply a new one now |
 | `drift-wallpaper --no-apply` | Fetch only |
-| `systemctl --user disable --now drift-wallpaper.timer` | Stop rotating |
+| `install.sh --timer` / `--no-timer` | Start or stop rotating every two hours |
 
 ## Colours from the wallpaper
 
